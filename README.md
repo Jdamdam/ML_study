@@ -1,5 +1,7 @@
 # ML_study
-Machine Learning Study
+About Machine Learning Study
+
+
 #########################
 -----2017.6 ~ 2018.1-----
 

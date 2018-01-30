@@ -1,0 +1,207 @@
+import tensorflow as tf
+import numpy as np
+
+tf.set_random_seed(777)  # for reproducibility
+
+x_data = [[1, 1, 1, 1, 1, 
+           1, 0, 0, 0, 1, 
+           1, 0, 0, 0, 1,  
+           1, 0, 0, 0, 1, 
+           1, 1, 1, 1, 1], #0 
+          [0, 0, 1, 0, 0,  
+           0, 0, 1, 0, 0, 
+           0, 0, 1, 0, 0,  
+           0, 0, 1, 0, 0, 
+           0, 0, 1, 0, 0], #1
+          [1, 1, 1, 1, 1, 
+           0, 0, 0, 0, 1,
+           1, 1, 1, 1, 1,
+           1, 0, 0, 0, 0,  
+           1, 1, 1, 1, 1], #2
+          [1, 1, 1, 1, 1,
+           0, 0, 0, 0, 1,
+           1, 1, 1, 1, 1,
+           0, 0, 0, 0, 1,
+           1, 1, 1, 1, 1], #3
+          [1, 0, 1, 0, 0,  
+           1, 0, 1, 0, 0, 
+           1, 1, 1, 1, 1,
+           0, 0, 1, 0, 0, 
+           0, 0, 1, 0, 0], #4
+          [1, 1, 1, 1, 1,
+           1, 0, 0, 0, 0,
+           1, 1, 1, 1, 1,
+           0, 0, 0, 0, 1, 
+           1, 1, 1, 1, 1], #5
+          [1, 1, 1, 1, 1,
+           1, 0, 0, 0, 0,
+           1, 1, 1, 1, 1, 
+           1, 0, 0, 0, 1, 
+           1, 1, 1, 1, 1], #6
+          [1, 1, 1, 1, 1, 
+           1, 0, 0, 0, 1,  
+           1, 0, 0, 0, 1, 
+           0, 0, 0, 0, 1, 
+           0, 0, 0, 0, 1], #7
+          [1, 1, 1, 1, 1, 
+           1, 0, 0, 0, 1, 
+           1, 1, 1, 1, 1, 
+           1, 0, 0, 0, 1,  
+           1, 1, 1, 1, 1], #8
+          [1, 1, 1, 1, 1, 
+           1, 0, 0, 0, 1, 
+           1, 1, 1, 1, 1,  
+           0, 0, 0, 0, 1,  
+           0, 0, 0, 0, 1]] #9
+# y_data = [[0],
+#           [1],
+#           [2],
+#           [3],
+#           [4],
+#           [5],
+#           [6],
+#           [7],
+#           [8],
+#           [9]]
+y_data = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]]
+
+test_data =[[1, 1, 1, 1, 1,  
+             1, 0, 0, 0, 1,  
+             1, 1, 1, 1, 1,  
+             0, 0, 0, 0, 1,  
+             0, 0, 0, 0, 1], #9
+            [1, 1, 1, 1, 1, 
+             1, 0, 0, 0, 1, 
+             1, 1, 1, 1, 1, 
+             1, 0, 0, 0, 1,  
+             1, 1, 1, 1, 1], #8
+            [0, 0, 1, 0, 0,  
+             0, 0, 1, 0, 0, 
+             0, 0, 1, 0, 0,  
+             0, 0, 1, 0, 0, 
+             0, 0, 1, 0, 0], #1
+            [1, 1, 1, 1, 1,
+             1, 0, 0, 0, 0,
+             1, 1, 1, 1, 1,
+             0, 0, 0, 0, 1, 
+             1, 1, 1, 1, 1]] #5
+test_true = [[9, 8, 1, 5]]
+
+print(x_data, '\n', y_data, '\n', test_data)
+
+nb_classes = 10  # 0 ~ 9
+
+x_data = np.array(x_data, dtype=np.float32)
+y_data = np.array(y_data, dtype=np.int32)
+test_data = np.array(test_data, dtype=np.int32)
+test_true = np.array(test_true, dtype=np.int32)
+
+X = tf.placeholder(tf.float32, shape=[None, 25], name = 'x_input')
+Y = tf.placeholder(tf.int32, shape=[None, 10], name = 'y_input')
+Y_one_hot = tf.one_hot(Y, nb_classes)  # one hot
+
+
+print("One_hot", Y_one_hot)
+Y_one_hot = tf.reshape(Y_one_hot, [-1, nb_classes])
+
+print("Reshape", Y_one_hot)
+
+print('re ', x_data, '\n', y_data, '\n', test_data)
+print(X, Y)
+
+#Hyperparameter
+learning_rate = 0.1
+iteration = 1000
+
+with tf.name_scope("layer1") as scope:
+    W1 = tf.Variable(tf.random_normal([25, 20]), name='weight1')
+    b1 = tf.Variable(tf.random_normal([20]), name='bias1')
+    layer1 = tf.nn.relu(tf.matmul(X, W1) + b1)
+    
+    w1_hist = tf.summary.histogram("weights1", W1)
+    b1_hist = tf.summary.histogram("biases1", b1)
+    layer1_hist = tf.summary.histogram("layer1", layer1)
+    
+with tf.name_scope("layer2") as scope:
+    W2 = tf.Variable(tf.random_normal([20, 10]), name='weight2')
+    b2 = tf.Variable(tf.random_normal([10]), name='bias2')
+    layer2 = tf.nn.relu(tf.matmul(layer1, W2) + b2)
+    
+    w2_hist = tf.summary.histogram("weights2", W2)
+    b2_hist = tf.summary.histogram("biases2", b2)
+    layer2_hist = tf.summary.histogram("layer2", layer2)
+    
+with tf.name_scope("layer3") as scope:
+    W3 = tf.Variable(tf.random_normal([10, nb_classes]), name='weight3')
+    b3 = tf.Variable(tf.random_normal([nb_classes]), name='bias3')
+    hypothesis = tf.matmul(layer2, W3) + b3
+    
+    w3_hist = tf.summary.histogram("weights2", W3)
+    b3_hist = tf.summary.histogram("biases2", b3)
+    hypothesis_hist = tf.summary.histogram("hypothesis", hypothesis)
+
+# cost/loss function
+with tf.name_scope("cost") as scope:
+    cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=hypothesis, labels=Y_one_hot))
+    cost_summ = tf.summary.scalar("cost", cost)
+
+with tf.name_scope("train") as scope:
+    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
+
+prediction  = tf.argmax(hypothesis, 1)
+correct_prediction = tf.equal(prediction, tf.argmax(Y_one_hot, 1))
+accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+accuracy_summ = tf.summary.scalar("accuracy", accuracy)
+
+# Launch graph
+with tf.Session() as sess:
+    # tensorboard --logdir=./logs
+    merged_summary = tf.summary.merge_all()
+    lr = str(learning_rate)
+    epo = str(iteration)
+    writer = tf.summary.FileWriter("./step" + epo +"/lr"+lr)
+    writer.add_graph(sess.graph)  # Show the graph
+    
+    # Initialize TensorFlow variables
+    sess.run(tf.global_variables_initializer())
+
+#     print(x_input)
+    for step in range(iteration+1):
+        summary, _ = sess.run([merged_summary, optimizer], feed_dict={X: x_data, Y: y_data})
+        writer.add_summary(summary, global_step=step)
+
+        if step % 100 == 0:
+            loss, acc = sess.run([cost, accuracy], feed_dict={X: x_data, Y: y_data})
+            print("Training Step: {:5}\tLoss: {:.3f}\tAcc: {:.2%}".format(step, loss, acc))
+#             print("\nLayer1 Weight: ",sess.run([W1]),
+#                   "\nLayer1 Bias: ",sess.run([b1]),
+#                   "\nLayer2 Weight: ",sess.run([W2]),
+#                   "\nLayer2 Bias: ",sess.run([b2]),
+#                   "\nLayer3 Weight: ",sess.run([W3]),
+#                   "\nLayer3 Bias: ",sess.run([b3]))
+            
+#           print("Training Step: ", step, " Cost: ",sess.run(cost, feed_dict={X: x_data, Y: y_data}))
+        
+    # Let's see if we can predict
+    pred = sess.run(prediction, feed_dict={X: x_data})
+    # y_data: (N,1) = flatten => (N, ) matches pred.shape
+    for p, y in zip(pred, y_data.flatten()):
+        print("[{}] Prediction: {} True Y: {}".format(p == int(y), p, int(y)))
+    
+    
+    print("----TEST-SET----")
+    pred = sess.run(prediction, feed_dict={X: test_data})
+    # y_data: (N,1) = flatten => (N, ) matches pred.shape
+    for p, y in zip(pred, test_true.flatten()):
+        print("[{}] Prediction: {} True Y: {}".format(p == int(y), p, int(y)))
+    
+    
+    
+#     # Accuracy report
+
+#     h, c, a = sess.run([hypothesis, prediction, accuracy], feed_dict={X: x_data, Y: y_data})
+#     print("\nHypothesis: ", h, "\nPrediction: ", c, "\nAccuracy: ", a)
+#     print('\n---TEST---')
+#     t = sess.run([prediction],feed_dict={X: test_data})
+#     print(t)
+
